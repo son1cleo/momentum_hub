@@ -1,6 +1,6 @@
-# Commit Ledger
+# Momentum Grid
 
-Commit Ledger is an accountability-first skill tracker built with Next.js 16 App Router and TypeScript.
+Momentum Grid is an accountability-first skill tracker built with Next.js 16 App Router and TypeScript.
 
 Core product rule:
 Users can add and complete commitments, but can never delete them.
@@ -13,7 +13,7 @@ This rule is enforced across:
 ## Product Intent
 
 Most trackers hide dropped goals.
-Commit Ledger preserves commitment history and keeps unfinished work visible.
+Momentum Grid preserves commitment history and keeps unfinished work visible.
 
 The emotional center is unfinished commitments, not streak gamification.
 
@@ -100,7 +100,7 @@ Required:
 - NEXTAUTH_SECRET
 
 Example values:
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/commit_ledger?schema=public
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/momentum_grid?schema=public
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=replace-with-a-long-random-string
 
@@ -127,8 +127,8 @@ NEXTAUTH_SECRET=replace-with-a-long-random-string
 
 ## Seeded Accounts
 
-- Owner: owner@commitledger.local / ownerpass123
-- Visitor: visitor@commitledger.local / visitorpass123
+- Owner: owner@momentumgrid.local / ownerpass123
+- Visitor: visitor@momentumgrid.local / visitorpass123
 
 Visitor mode is read-only and uses seeded visitor data.
 Owner mode reads owner private data after login.
@@ -195,7 +195,7 @@ Option A: Managed online Postgres (recommended for deployment)
 
 Option B: Local Postgres
 - Install PostgreSQL locally
-- Create database commit_ledger
+- Create database momentum_grid
 - Use local DATABASE_URL
 - Good for offline dev and local data experimentation
 
