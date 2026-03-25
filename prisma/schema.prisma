@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  VISITOR
+}
+
+enum SkillStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum SkillEventType {
+  CREATED
+  COMPLETED
+  PINNED
+  UNPINNED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         Role     @default(VISITOR)
+  createdAt    DateTime @default(now())
+
+  skills       Skill[]
+  events       SkillEvent[]
+}
+
+model Skill {
+  id          String      @id @default(cuid())
+  userId      String
+  title       String
+  category    String
+  status      SkillStatus @default(IN_PROGRESS)
+  pinned      Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  completedAt DateTime?
+  targetDate  DateTime?
+  notes       String?
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  events      SkillEvent[]
+
+  @@index([userId, status])
+  @@index([userId, pinned])
+  @@index([createdAt])
+}
+
+model SkillEvent {
+  id        String         @id @default(cuid())
+  skillId   String
+  userId    String
+  eventType SkillEventType
+  eventAt   DateTime       @default(now())
+  metadata  Json?
+
+  skill     Skill          @relation(fields: [skillId], references: [id], onDelete: Restrict)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([skillId, eventAt])
+  @@index([userId, eventAt])
+}
