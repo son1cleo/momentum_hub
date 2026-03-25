@@ -266,4 +266,3 @@ If you want to avoid fragile build habits, use this repeatable discipline:
 	- Verify env vars
 	- Smoke test critical routes
 
-That workflow is what separates shipping engineers from vibe coding.
