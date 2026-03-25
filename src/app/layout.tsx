@@ -14,7 +14,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Commit Ledger",
+  title: "Momentum Grid",
   description: "Accountability-first skill tracker that keeps unfinished commitments visible.",
 };
 
