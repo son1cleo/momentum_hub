@@ -5,6 +5,11 @@ import bcrypt from "bcryptjs";
 import { Role } from "@prisma/client";
 import { db } from "@/lib/db";
 import { loginSchema } from "@/lib/validation";
+import {
+  checkLoginRateLimit,
+  checkAccountLockout,
+  recordLoginAttempt,
+} from "@/lib/login-security";
 
 const config: NextAuthConfig = {
   providers: [
@@ -14,21 +19,72 @@ const config: NextAuthConfig = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(raw) {
+      async authorize(raw, request) {
+        // Get IP address from request headers
+        const ipAddress =
+          (request?.headers?.get("x-forwarded-for") as string) ||
+          (request?.headers?.get("x-real-ip") as string) ||
+          "unknown";
+
         const parsed = loginSchema.safeParse(raw);
         if (!parsed.success) {
           return null;
         }
 
-        const user = await db.user.findUnique({ where: { email: parsed.data.email } });
+        const { email, password } = parsed.data;
+
+        // Check rate limit
+        const rateLimitCheck = await checkLoginRateLimit(email, ipAddress);
+        if (!rateLimitCheck.allowed) {
+          await recordLoginAttempt(
+            email,
+            ipAddress,
+            false,
+            undefined,
+            rateLimitCheck.reason,
+          );
+          throw new Error(rateLimitCheck.reason);
+        }
+
+        // Check account lockout
+        const lockoutCheck = await checkAccountLockout(email);
+        if (lockoutCheck.locked) {
+          await recordLoginAttempt(
+            email,
+            ipAddress,
+            false,
+            undefined,
+            lockoutCheck.reason,
+          );
+          throw new Error(lockoutCheck.reason);
+        }
+
+        const user = await db.user.findUnique({ where: { email } });
         if (!user) {
+          await recordLoginAttempt(
+            email,
+            ipAddress,
+            false,
+            undefined,
+            "User not found",
+          );
           return null;
         }
 
-        const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
+        const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) {
+          await recordLoginAttempt(
+            email,
+            ipAddress,
+            false,
+            user.id,
+            "Invalid password",
+          );
           return null;
         }
+
+        // Successful login
+        await recordLoginAttempt(email, ipAddress, true, user.id);
 
         return {
           id: user.id,

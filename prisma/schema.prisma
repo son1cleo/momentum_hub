@@ -24,15 +24,34 @@ enum SkillEventType {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String?
-  passwordHash String
-  role         Role     @default(VISITOR)
-  createdAt    DateTime @default(now())
+  id                    String   @id @default(cuid())
+  email                 String   @unique
+  name                  String?
+  passwordHash          String
+  role                  Role     @default(VISITOR)
+  createdAt             DateTime @default(now())
+  failedLoginAttempts   Int      @default(0)
+  lockedUntil           DateTime?
 
-  skills       Skill[]
-  events       SkillEvent[]
+  skills                Skill[]
+  events                SkillEvent[]
+  loginEvents           LoginEvent[]
+}
+
+model LoginEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String
+  ipAddress String
+  success   Boolean
+  reason    String?
+  attemptAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, attemptAt])
+  @@index([ipAddress, attemptAt])
+  @@index([userId, attemptAt])
 }
 
 model Skill {
